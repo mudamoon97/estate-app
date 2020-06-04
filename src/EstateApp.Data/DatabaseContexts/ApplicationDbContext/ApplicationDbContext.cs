@@ -1,4 +1,5 @@
-
+using EstateApp.Data.Entities;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace EstateApp.Data.DatabaseContexts.ApplicationDbContext
