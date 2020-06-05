@@ -31,24 +31,22 @@ namespace EstateApp.Web
                 sqlServerOptions => {
                     sqlServerOptions.MigrationsAssembly("EstateApp.Data");
                 }
-            
+                
             ));
 
-            services.AddDbContextPool<ApplicationDbContext>(options =>
+            services.AddDbContextPool<ApplicationDbContext>(options => 
                 options.UseSqlServer(Configuration.GetConnectionString("ApplicationConnection"),
-            
-            sqlServerOptions => {
-                sqlServerOptions.MigrationsAssembly("EstateApp.Data");
+                
+                sqlServerOptions => {
+                    sqlServerOptions.MigrationsAssembly("EstateApp.Data");
                 }
-            
             ));
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
             .AddEntityFrameworkStores<AuthenticationDbContext>()
             .AddDefaultTokenProviders();
 
-            services.Configure<IdentityOptions>(options=>
-            
+            services.Configure<IdentityOptions>(options => 
             {
                 options.Password.RequireDigit = false;
                 options.Password.RequiredLength = 6;
@@ -59,11 +57,10 @@ namespace EstateApp.Web
                 options.SignIn.RequireConfirmedPhoneNumber = false;
             });
 
+                
             services.AddControllersWithViews();
-            
         }
 
-        
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider svp)
         {
@@ -90,10 +87,9 @@ namespace EstateApp.Web
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
-            
-            MigrateDatabaseContexts(svp);
-            CreateDefaultRolesAndUser(svp).GetAwaiter().GetResult();
 
+            MigrateDatabaseContexts(svp);
+            CreateDefaultRolesAndUsers(svp).GetAwaiter().GetResult();
         }
 
         public void MigrateDatabaseContexts(IServiceProvider svp)
@@ -105,7 +101,7 @@ namespace EstateApp.Web
             applicationDbContext.Database.Migrate();
         }
 
-        public async Task CreateDefaultRolesAndUser(IServiceProvider svp)
+        public async Task CreateDefaultRolesAndUsers(IServiceProvider svp)
         {
             string[] roles = new string[] { "SystemAdministrator", "Agent", "User" };
             var userEmail = "admin@estateapp.com";
@@ -130,13 +126,13 @@ namespace EstateApp.Web
                     Email = userEmail,
                     UserName = userEmail,
                     EmailConfirmed = true,
-                    PhoneNumber = "+2348028583032",
+                    PhoneNumber = "+2349060697346",
                     PhoneNumberConfirmed = true
                 };
 
                 await userManager.CreateAsync(user, userPassword);
                 await userManager.AddToRolesAsync(user, roles);
-            }                       
+            }
         }
     }
 }
