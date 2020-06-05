@@ -42,13 +42,30 @@ namespace EstateApp.Web
                 }
             
             ));
+
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+            .AddEntityFrameworkStores<AuthenticationDbContext>()
+            .AddDefaultTokenProviders();
+
+            services.Configure<IdentityOptions>(options=>
+            
+            {
+                options.Password.RequireDigit = false;
+                options.Password.RequiredLength = 6;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = false;
+                options.SignIn.RequireConfirmedEmail = false;
+                options.SignIn.RequireConfirmedPhoneNumber = false;
+            });
+
             services.AddControllersWithViews();
             
         }
 
         
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider svp)
         {
             if (env.IsDevelopment())
             {
@@ -73,6 +90,53 @@ namespace EstateApp.Web
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
+            
+            MigrateDatabaseContexts(svp);
+            CreateDefaultRolesAndUser(svp).GetAwaiter().GetResult();
+
+        }
+
+        public void MigrateDatabaseContexts(IServiceProvider svp)
+        {
+            var authenticationDbContext = svp.GetRequiredService<AuthenticationDbContext>();
+            authenticationDbContext.Database.Migrate();
+
+            var applicationDbContext = svp.GetRequiredService<ApplicationDbContext>();
+            applicationDbContext.Database.Migrate();
+        }
+
+        public async Task CreateDefaultRolesAndUser(IServiceProvider svp)
+        {
+            string[] roles = new string[] { "SystemAdministrator", "Agent", "User" };
+            var userEmail = "admin@estateapp.com";
+            var userPassword = "SuperSecretPassword@2020";
+
+            var roleManager = svp.GetRequiredService<RoleManager<IdentityRole>>();
+            foreach(var role in roles)
+            {
+                var roleExists = await roleManager.RoleExistsAsync(role);
+                if(!roleExists)
+                {
+                    await roleManager.CreateAsync(new IdentityRole{ Name = role });
+                }
+            }
+
+            var userManager = svp.GetRequiredService<UserManager<ApplicationUser>>();
+            var user = await userManager.FindByEmailAsync(userEmail);
+            if(user is null)
+            {
+                user = new ApplicationUser
+                {
+                    Email = userEmail,
+                    UserName = userEmail,
+                    EmailConfirmed = true,
+                    PhoneNumber = "+2348028583032",
+                    PhoneNumberConfirmed = true
+                };
+
+                await userManager.CreateAsync(user, userPassword);
+                await userManager.AddToRolesAsync(user, roles);
+            }                       
         }
     }
 }
