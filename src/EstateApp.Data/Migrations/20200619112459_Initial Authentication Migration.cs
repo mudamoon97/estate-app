@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace EstateApp.Data.Migrations
 {
-    public partial class InitialAuthenticationsMigration : Migration
+    public partial class InitialAuthenticationMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
